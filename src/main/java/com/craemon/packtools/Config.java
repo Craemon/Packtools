@@ -46,9 +46,9 @@ public class Config {
         Config cfg = new Config();
 
         // Version metadata
-        cfg.minecraftVersion = "1.21.8";    // Minecraft version for title and Test Instance
-        cfg.datapackVersion = "88.0";         // Datapack version
-        cfg.resourcepackVersion = "69.0";     // Resourcepack version
+        cfg.minecraftVersion = "26.1";    // Minecraft version for title and Test Instance
+        cfg.datapackVersion = "99.0";         // Datapack version
+        cfg.resourcepackVersion = "80.0";     // Resourcepack version
 
         // Path to your local project directory (this is where the program will operate)
         cfg.projectRoot = "/path/to/your/project/root";
