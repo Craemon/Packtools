@@ -2,7 +2,7 @@
 set -e
 
 VERSION="1.1.0"
-URL="https://github.com/Craemon/Packtools/releases/download/v$VERSION/packtools-all.jar"
+URL="https://github.com/Craemon/Packtools/releases/download/$VERSION/packtools-all.jar"
 
 echo "Installing PackTools $VERSION..."
 
