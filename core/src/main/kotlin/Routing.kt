@@ -1,37 +1,23 @@
 package com.craemon
 
+import com.craemon.models.Pack
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.io.File
 
-@Serializable
-data class Pack(
-    val id: String,
-    val name: String,
-    val version: String,
-    val status: String
-)
-
-val availablePacks = listOf(
-    Pack("p1", "Base Utilities", "1.0.0", "ready"),
-    Pack("p2", "Network Tools", "2.1.4", "archived"),
-    Pack("p3", "Crypto Extension", "0.9.2", "beta")
-)
-
-fun Application.configureRouting() {
-    install(ContentNegotiation) {
-        json()
-    }
+fun Application.configureRouting(packsDir: File, buildsDir: File, artifactsDir: File) {
+    val jsonParser = Json { ignoreUnknownKeys = true; classDiscriminator = "type" }
 
     routing {
-        route("api/v1") {
-            route("/packs") {
-                get {
-                    call.respond(availablePacks)
+        route("api/v1/packs") {
+            get {
+                val packFiles = packsDir.listFiles { f -> f.extension == "json" } ?: emptyArray()
+                val packsList = packFiles.mapNotNull { file ->
+                    runCatching { jsonParser.decodeFromString<Pack>(file.readText()) }.getOrNull()
                 }
+                call.respond(packsList)
             }
         }
     }

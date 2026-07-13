@@ -1,6 +1,7 @@
 ktor:
   deployment:
     port: 8080
+    repoRoot: "/home/henning/Projects/GitHub/packTest"
   application:
     modules:
-      - com.craemon.RoutingKt.configureRouting
+      - com.craemon.ApplicationKt.module
