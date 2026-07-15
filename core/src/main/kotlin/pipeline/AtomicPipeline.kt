@@ -48,13 +48,17 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         for ((key, element) in currentTree) {
             when (element) {
                 is JsonObject -> {
-                    val nextSubfolder = File(currentStagingLocation, key).apply { mkdirs() }
+                    val cleanKey = key.trimEnd('/')
+
+                    val nextSubfolder = File(currentStagingLocation, cleanKey).normalize()
+                    nextSubfolder.mkdirs()
+
                     unpackTree(element, nextSubfolder)
                 }
                 is JsonPrimitive -> {
                     if (element.isString) {
                         val sourceFile = File(libDir, element.content)
-                        val targetFile = File(currentStagingLocation, key)
+                        val targetFile = File(currentStagingLocation, key).normalize()
 
                         if (sourceFile.exists()) {
                             targetFile.parentFile.mkdirs()
