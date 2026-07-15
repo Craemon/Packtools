@@ -21,7 +21,13 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         }
 
         executeScriptCluster(pack.preBuild, stagingDir, executionEnvironment)
-        unpackTree(pack.structure, stagingDir)
+
+        when (pack.structureStyle.lowercase()) {
+            "flat" -> unpackFlat(pack.structure, stagingDir)
+            "tree" -> unpackTree(pack.structure, stagingDir)
+            else -> throw IllegalArgumentException("Unknown structureStyle: ${pack.structureStyle} found in ${pack.id}")
+        }
+
         executeScriptCluster(pack.postBuild, stagingDir, executionEnvironment)
     }
 
@@ -59,6 +65,22 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
                     }
                 }
                 else -> println("Skipping unhandled layout structure key: $key")
+            }
+        }
+    }
+
+    private fun unpackFlat(currentTree: Map<String, JsonElement>, currentStagingLocation: File) {
+        for ((destinationPath, element) in currentTree) {
+            if (element is JsonPrimitive && element.isString) {
+                val sourceFile = File(libDir, element.content)
+                val targetFile = File(currentStagingLocation, destinationPath)
+
+                if (sourceFile.exists()) {
+                    targetFile.parentFile.mkdirs()
+                    Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                } else {
+                    println("Source file asset missing from library: ${sourceFile.absolutePath}")
+                }
             }
         }
     }
