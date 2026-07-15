@@ -29,5 +29,5 @@ data class ListPack(
     override val id: String,
     override val name: String,
     override val specVersion: Int,
-    val childPacks: List<Pack>
+    val childPacks: List<String>
 ) : Pack

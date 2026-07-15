@@ -13,11 +13,13 @@ import java.io.File
 val BuildEngineAttributeKey = AttributeKey<CentralBuildEngine>("CentralBuildEngine")
 
 fun Application.module() {
+    val jsonConfig = Json {
+        ignoreUnknownKeys = true
+        classDiscriminator = "type"
+    }
+
     install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-            classDiscriminator = "type"
-        })
+        json(jsonConfig)
     }
 
     val repoRootPath = environment.config.propertyOrNull("ktor.deployment.repoRoot")?.getString() ?: "."
@@ -30,7 +32,7 @@ fun Application.module() {
 
     val engine = CentralBuildEngine().apply {
         registerStrategy(AtomicPipeline(libDir = libDir))
-        registerStrategy(ListPipeline(this))
+        registerStrategy(ListPipeline(engine = this, packsDir = packsDir, json = jsonConfig))
     }
 
     attributes.put(BuildEngineAttributeKey, engine)
