@@ -19,7 +19,6 @@ data class AtomicPack(
     override val specVersion: Int,
     val version: String = "1.0.0",
     val preBuild: List<String> = emptyList(),
-    val structureStyle: String = "tree",
     val structure: Map<String, JsonElement> = emptyMap(),
     val postBuild: List<String> = emptyList()
 ) : Pack

@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption
 class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
     override fun execute(pack: AtomicPack, sessionDir: File, artifactsDir: File, context: BuildContext) {
         val stagingDir = resolveUniqueSandbox(sessionDir, pack.id)
+        ensureSafePath(sessionDir, stagingDir)
 
         val executionEnvironment = mutableMapOf<String, String>().apply {
             putAll(context.globalParameters)
@@ -21,13 +22,7 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         }
 
         executeScriptCluster(pack.preBuild, stagingDir, executionEnvironment)
-
-        when (pack.structureStyle.lowercase()) {
-            "flat" -> unpackFlat(pack.structure, stagingDir)
-            "tree" -> unpackTree(pack.structure, stagingDir)
-            else -> throw IllegalArgumentException("Unknown structureStyle: ${pack.structureStyle} found in ${pack.id}")
-        }
-
+        unpackTree(pack.structure, stagingDir, stagingDir)
         executeScriptCluster(pack.postBuild, stagingDir, executionEnvironment)
     }
 
@@ -44,21 +39,21 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         return candidateDir
     }
 
-    private fun unpackTree(currentTree: Map<String, JsonElement>, currentStagingLocation: File) {
+    private fun unpackTree(currentTree: Map<String, JsonElement>, currentStagingLocation: File, masterStagingDir: File) {
         for ((key, element) in currentTree) {
             when (element) {
                 is JsonObject -> {
                     val cleanKey = key.trimEnd('/')
 
-                    val nextSubfolder = File(currentStagingLocation, cleanKey).normalize()
+                    val nextSubfolder = ensureSafePath(masterStagingDir, File(currentStagingLocation, cleanKey).normalize())
                     nextSubfolder.mkdirs()
 
-                    unpackTree(element, nextSubfolder)
+                    unpackTree(element, nextSubfolder, masterStagingDir)
                 }
                 is JsonPrimitive -> {
                     if (element.isString) {
                         val sourceFile = File(libDir, element.content)
-                        val targetFile = File(currentStagingLocation, key).normalize()
+                        val targetFile = ensureSafePath(masterStagingDir, File(currentStagingLocation, key).normalize())
 
                         if (sourceFile.exists()) {
                             targetFile.parentFile.mkdirs()
@@ -69,22 +64,6 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
                     }
                 }
                 else -> println("Skipping unhandled layout structure key: $key")
-            }
-        }
-    }
-
-    private fun unpackFlat(currentTree: Map<String, JsonElement>, currentStagingLocation: File) {
-        for ((destinationPath, element) in currentTree) {
-            if (element is JsonPrimitive && element.isString) {
-                val sourceFile = File(libDir, element.content)
-                val targetFile = File(currentStagingLocation, destinationPath)
-
-                if (sourceFile.exists()) {
-                    targetFile.parentFile.mkdirs()
-                    Files.copy(sourceFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                } else {
-                    println("Source file asset missing from library: ${sourceFile.absolutePath}")
-                }
             }
         }
     }

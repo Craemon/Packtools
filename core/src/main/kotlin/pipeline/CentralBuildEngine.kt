@@ -16,6 +16,9 @@ class CentralBuildEngine {
 
     fun compile(pack:Pack, buildsDir: File, artifactsDir: File, context: BuildContext) {
         val topLevelSessionDir = generateUniquesBuildDir(buildsDir, pack.id).apply { mkdirs() }
+        if (!topLevelSessionDir.canonicalPath.startsWith(buildsDir.canonicalPath)) {
+            throw SecurityException("Invalid pack ID: '${pack.id}' attempted to escape the builds directory.")
+        }
         runPipeline(pack, topLevelSessionDir, artifactsDir, context)
     }
 
