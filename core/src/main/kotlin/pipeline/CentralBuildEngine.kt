@@ -14,7 +14,7 @@ class CentralBuildEngine {
         strategies[T::class] = strategy
     }
 
-    fun compile(pack:Pack, buildsDir: File, artifactsDir: File, context: BuildContext) {
+    fun build(pack:Pack, buildsDir: File, artifactsDir: File, context: BuildContext) {
         val topLevelSessionDir = generateUniquesBuildDir(buildsDir, pack.id).apply { mkdirs() }
         if (!topLevelSessionDir.canonicalPath.startsWith(buildsDir.canonicalPath)) {
             throw SecurityException("Invalid pack ID: '${pack.id}' attempted to escape the builds directory.")
@@ -35,12 +35,12 @@ class CentralBuildEngine {
 
     private fun generateUniquesBuildDir(buildsDir: File, packId: String): File {
         val timeStamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now())
-        var candidateDir = File("${buildsDir.absolutePath}/$packId/run-$timeStamp")
+        var candidateDir = File(buildsDir, "run-$timeStamp-$packId")
 
         if (candidateDir.exists()) {
             var counter = 1
             while (candidateDir.exists()) {
-                candidateDir = File("${buildsDir.absolutePath}/$packId/run-$timeStamp-$counter")
+                candidateDir = File(buildsDir, "run-$timeStamp-$packId-$counter")
                 counter++
             }
         }
