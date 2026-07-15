@@ -26,19 +26,6 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         executeScriptCluster(pack.postBuild, stagingDir, executionEnvironment)
     }
 
-    private fun resolveUniqueSandbox(sessionDir: File, packId: String): File {
-        var candidateDir = File(sessionDir, packId)
-        if (candidateDir.exists()) {
-            var counter = 1
-            while (candidateDir.exists()) {
-                candidateDir = File(sessionDir, "$packId-$counter")
-                counter++
-            }
-        }
-        candidateDir.mkdirs()
-        return candidateDir
-    }
-
     private fun unpackTree(currentTree: Map<String, JsonElement>, currentStagingLocation: File, masterStagingDir: File) {
         for ((key, element) in currentTree) {
             when (element) {

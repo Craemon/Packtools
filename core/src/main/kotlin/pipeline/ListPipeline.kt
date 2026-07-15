@@ -12,17 +12,4 @@ class ListPipeline(private val engine: CentralBuildEngine) : PipelineStrategy<Li
             engine.runPipeline(childPack, listSandBoxDir, artifactsDir, context)
         }
     }
-
-    private fun resolveUniqueSandbox(sessionDir: File, packId: String): File {
-        var candidateDir = File(sessionDir, packId)
-        if (candidateDir.exists()) {
-            var counter = 1
-            while (candidateDir.exists()) {
-                candidateDir = File(sessionDir, "$packId-$counter")
-                counter++
-            }
-        }
-        candidateDir.mkdirs()
-        return candidateDir
-    }
 }
