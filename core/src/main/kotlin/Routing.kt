@@ -1,5 +1,6 @@
 package com.craemon
 
+import com.craemon.config.GlobalConfigParser
 import com.craemon.models.Pack
 import com.craemon.pipeline.BuildContext
 import io.ktor.http.HttpStatusCode
@@ -9,8 +10,14 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import java.io.File
 
-fun Application.configureRouting(packsDir: File, buildsDir: File, artifactsDir: File) {
+fun Application.configureRouting(
+    repoRoot: File,
+    packsDir: File,
+    buildsDir: File,
+    artifactsDir: File
+) {
     val jsonParser = Json { ignoreUnknownKeys = true; classDiscriminator = "type" }
+    val globalConfigFile = File(repoRoot, "global.config")
 
     routing {
         route("api/v1/packs") {
@@ -38,7 +45,12 @@ fun Application.configureRouting(packsDir: File, buildsDir: File, artifactsDir: 
                 try {
                     val engine = call.application.attributes[BuildEngineAttributeKey]
                     val pack = jsonParser.decodeFromString<Pack>(targetPackFile.readText())
-                    val context = BuildContext(globalParameters = mutableMapOf("TRIGGERED_BY" to "HTTP_API"))
+
+                    val globalSettings = GlobalConfigParser.parse(globalConfigFile)
+
+                    val context = BuildContext(globalParameters = mutableMapOf("TRIGGERED_BY" to "HTTP_API").apply {
+                        putAll(globalSettings)
+                    })
 
                     engine.build(pack, buildsDir, artifactsDir, context)
 

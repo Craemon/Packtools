@@ -37,5 +37,10 @@ fun Application.module() {
 
     attributes.put(BuildEngineAttributeKey, engine)
 
-    configureRouting(packsDir = packsDir, buildsDir = buildsDir, artifactsDir = artifactsDir)
+    configureRouting(
+        repoRoot = workspaceRoot,
+        packsDir = packsDir,
+        buildsDir = buildsDir,
+        artifactsDir = artifactsDir
+    )
 }
