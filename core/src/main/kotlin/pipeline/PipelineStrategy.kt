@@ -4,7 +4,7 @@ import com.craemon.models.Pack
 import java.io.File
 
 interface PipelineStrategy<T : Pack> {
-    fun execute(pack: T, sessionDir: File, artifactsDir: File, context: BuildContext)
+    fun execute(pack: T, runRoot: File, sessionDir: File, artifactsDir: File, context: BuildContext)
 
     fun ensureSafePath(sandboxDir: File, targetFile: File): File {
         val canonicalSandbox = sandboxDir.canonicalPath

@@ -10,7 +10,7 @@ class ListPipeline(
     private val packsDir: File,
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) : PipelineStrategy<ListPack> {
-    override fun execute(pack: ListPack, sessionDir: File, artifactsDir: File, context: BuildContext) {
+    override fun execute(pack: ListPack, runRoot: File, sessionDir: File, artifactsDir: File, context: BuildContext) {
         val listSandBoxDir = resolveUniqueSandbox(sessionDir, pack.id)
         ensureSafePath(sessionDir, listSandBoxDir)
 
@@ -22,7 +22,7 @@ class ListPipeline(
                     val childJsonContent = childPackFile.readText()
                     val childPack = json.decodeFromString<Pack>(childJsonContent)
 
-                    engine.runPipeline(childPack, listSandBoxDir, artifactsDir, context)
+                    engine.runPipeline(childPack, runRoot, listSandBoxDir, artifactsDir, context)
                 } catch (e: Exception) {
                     println("Failed to parse child pack configuration at '$relativePath': ${e.message}")
                 }

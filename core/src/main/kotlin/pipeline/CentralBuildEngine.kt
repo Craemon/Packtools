@@ -19,12 +19,12 @@ class CentralBuildEngine {
         if (!topLevelSessionDir.canonicalPath.startsWith(buildsDir.canonicalPath)) {
             throw SecurityException("Invalid pack ID: '${pack.id}' attempted to escape the builds directory.")
         }
-        runPipeline(pack, topLevelSessionDir, artifactsDir, context)
+        runPipeline(pack, topLevelSessionDir, topLevelSessionDir, artifactsDir, context)
     }
 
-    fun runPipeline(pack: Pack, sessionDir: File, artifactsDir: File, context: BuildContext) {
+    fun runPipeline(pack: Pack, runRoot: File, sessionDir: File, artifactsDir: File, context: BuildContext) {
         val strategy = getStrategyFor(pack)
-        strategy.execute(pack, sessionDir, artifactsDir, context)
+        strategy.execute(pack, runRoot, sessionDir, artifactsDir, context)
     }
 
     @Suppress("UNCHECKED_CAST")
