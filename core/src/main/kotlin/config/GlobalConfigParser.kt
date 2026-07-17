@@ -23,7 +23,9 @@ object GlobalConfigParser {
                     val key = parts[0].trim()
                     val value = parts[1].trim()
                     if (key.isNotEmpty()) {
-                        configMap[key] = value
+                        val upperKey = key.uppercase()
+                        val formattedKey = if (upperKey.startsWith("GLOBAL_")) upperKey else "GLOBAL_$upperKey"
+                        configMap[formattedKey] = value
                     }
                 }
             }

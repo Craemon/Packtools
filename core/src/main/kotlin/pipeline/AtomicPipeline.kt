@@ -14,19 +14,25 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
         ensureSafePath(sessionDir, stagingDir)
 
         val executionEnvironment = mutableMapOf<String, String>().apply {
+
             putAll(context.globalParameters)
+
             put("PACK_ID", pack.id)
+            put("PACK_NAME", pack.name)
+            put("PACK_AUTHOR", pack.author)
+            put("PACK_VERSION", pack.version)
+
             put("SANDBOX_NAME", stagingDir.name)
             put("BUILD_SESSION_NAME", sessionDir.name)
             put("LIB_DIR", libDir.absolutePath)
         }
 
         executeScriptCluster(pack.preBuild, stagingDir, executionEnvironment)
-        unpackTree(pack.structure, stagingDir, stagingDir)
+        unpackTree(pack.structure, stagingDir, stagingDir, libDir)
         executeScriptCluster(pack.postBuild, stagingDir, executionEnvironment)
     }
 
-    private fun unpackTree(currentTree: Map<String, JsonElement>, currentStagingLocation: File, masterStagingDir: File) {
+    private fun unpackTree(currentTree: Map<String, JsonElement>, currentStagingLocation: File, masterStagingDir: File, libraryDir: File) {
         for ((key, element) in currentTree) {
             when (element) {
                 is JsonObject -> {
@@ -35,11 +41,11 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
                     val nextSubfolder = ensureSafePath(masterStagingDir, File(currentStagingLocation, cleanKey).normalize())
                     nextSubfolder.mkdirs()
 
-                    unpackTree(element, nextSubfolder, masterStagingDir)
+                    unpackTree(element, nextSubfolder, masterStagingDir, libraryDir)
                 }
                 is JsonPrimitive -> {
                     if (element.isString) {
-                        val sourceFile = File(libDir, element.content)
+                        val sourceFile = File(libraryDir, element.content)
                         val targetFile = ensureSafePath(masterStagingDir, File(currentStagingLocation, key).normalize())
 
                         if (sourceFile.exists()) {
