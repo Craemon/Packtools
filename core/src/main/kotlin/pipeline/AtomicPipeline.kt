@@ -24,9 +24,9 @@ class AtomicPipeline(private val libDir: File) : PipelineStrategy<AtomicPack> {
             put("LIB_DIR", libDir.absolutePath)
         }
 
-        ScriptExecutor.executeCluster(pack.preBuild, stagingDir, executionEnvironment)
+        ScriptExecutor.executeCluster(pack.preBuild, stagingDir, libDir, executionEnvironment)
         unpackTree(pack.structure, stagingDir, stagingDir, libDir)
-        ScriptExecutor.executeCluster(pack.postBuild, stagingDir, executionEnvironment)
+        ScriptExecutor.executeCluster(pack.postBuild, stagingDir, libDir, executionEnvironment)
 
         val zipFileName = resolveArtifactName(pack, executionEnvironment) + ".zip"
         val sessionZipFile = File(stagingDir.parentFile, zipFileName)
