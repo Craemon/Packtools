@@ -3,6 +3,7 @@ package com.craemon
 import com.craemon.pipeline.AtomicPipeline
 import com.craemon.pipeline.CentralBuildEngine
 import com.craemon.pipeline.ListPipeline
+import com.craemon.services.BuildHistoryService
 import com.craemon.services.PackService
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
@@ -41,6 +42,11 @@ fun Application.module() {
         engine = engine,
         jsonParser = jsonConfig
     )
-    
-    configureRouting(packService)
+
+    val buildHistoryService = BuildHistoryService(
+        buildsDir = buildsDir,
+        jsonParser = jsonConfig
+    )
+
+    configureRouting(packService, buildHistoryService)
 }
