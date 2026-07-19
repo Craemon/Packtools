@@ -1,5 +1,6 @@
 package com.craemon
 
+import com.craemon.services.ArtifactService
 import com.craemon.services.BuildHistoryService
 import com.craemon.services.PackService
 import io.ktor.http.HttpStatusCode
@@ -9,7 +10,8 @@ import io.ktor.server.routing.*
 
 fun Application.configureRouting(
     packService: PackService,
-    buildHistoryService: BuildHistoryService
+    buildHistoryService: BuildHistoryService,
+    artifactService: ArtifactService
 ) {
     routing {
         route("api/v1") {
@@ -76,6 +78,21 @@ fun Application.configureRouting(
                         call.respond(HttpStatusCode.OK, mapOf("status" to "success", "message" to "Build history directory wiped out clean."))
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to clean builds folder: ${e.message}"))
+                    }
+                }
+            }
+
+            route("/artifacts") {
+                get {
+                    call.respond(artifactService.getAvailableArtifacts())
+                }
+
+                delete {
+                    try {
+                        artifactService.purgeArtifactsDirectory()
+                        call.respond(HttpStatusCode.OK, mapOf("status" to "success", "message" to "Artifacts directory wiped."))
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to clean artifacts folder: ${e.message}"))
                     }
                 }
             }
