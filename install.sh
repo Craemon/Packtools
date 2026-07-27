@@ -43,11 +43,34 @@ CURRENT_DIR="$(pwd)"
 
 if [ ! -f "$CONFIG_FILE" ]; then
     mkdir -p "$CONFIG_DIR"
+
+    # Default fallback if installer is run directly from $HOME
+    if [ "$CURRENT_DIR" = "$HOME" ]; then
+        SUGGESTED_DIR="$HOME/Projects"
+    else
+        SUGGESTED_DIR="$CURRENT_DIR"
+    fi
+
+    TARGET_DIR=""
+
+    # Read directly from /dev/tty to support `curl | sh` pipeline
+    if [ -c /dev/tty ]; then
+        echo ""
+        printf "Enter repository root path [%s]: " "$SUGGESTED_DIR"
+        read -r INPUT_DIR < /dev/tty
+        TARGET_DIR="${INPUT_DIR:-$SUGGESTED_DIR}"
+    else
+        TARGET_DIR="$SUGGESTED_DIR"
+    fi
+
+    # Expand tilde ~ if user entered it manually
+    TARGET_DIR=$(eval echo "$TARGET_DIR")
+
     cat <<EOF > "$CONFIG_FILE"
 # Packtools Configuration
-repoRoot: "$CURRENT_DIR"
+repoRoot: "$TARGET_DIR"
 EOF
-    echo "Created default config at $CONFIG_FILE pointing to $CURRENT_DIR"
+    echo "✓ Created config at $CONFIG_FILE (repoRoot: $TARGET_DIR)"
 fi
 
 # 5. Setup Bash Completion
