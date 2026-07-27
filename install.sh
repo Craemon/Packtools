@@ -73,18 +73,7 @@ EOF
     echo "✓ Created config at $CONFIG_FILE (repoRoot: $TARGET_DIR)"
 fi
 
-# 5. Setup Bash Completion
-if [ -d /etc/bash_completion.d ]; then
-    if /usr/local/bin/packtools completion bash > /tmp/packtools_completion 2>/dev/null; then
-        sudo mv /tmp/packtools_completion /etc/bash_completion.d/packtools
-        sudo chmod 644 /etc/bash_completion.d/packtools
-        echo "Installed bash autocompletion."
-    else
-        rm -f /tmp/packtools_completion
-    fi
-fi
-
-# 6. Setup Background Systemd Service
+# 5. Setup Background Systemd Service
 SYSTEMD_ENABLED=0
 
 if command -v systemctl >/dev/null 2>&1 && systemctl --user status >/dev/null 2>&1; then
@@ -109,6 +98,24 @@ EOF
     systemctl --user daemon-reload 2>/dev/null || true
     systemctl --user enable --now packtools.service 2>/dev/null || true
     SYSTEMD_ENABLED=1
+
+    # Give server a moment to spin up before CLI completion calls the API
+    sleep 1
+fi
+
+# 6. Setup Bash Completion
+if [ -d /etc/bash_completion.d ]; then
+    if /usr/local/bin/packtools completion bash > /tmp/packtools_completion 2>/dev/null; then
+        if [ -s /tmp/packtools_completion ]; then
+            sudo mv /tmp/packtools_completion /etc/bash_completion.d/packtools
+            sudo chmod 644 /etc/bash_completion.d/packtools
+            echo "Installed bash autocompletion."
+        else
+            rm -f /tmp/packtools_completion
+        fi
+    else
+        rm -f /tmp/packtools_completion
+    fi
 fi
 
 echo ""
