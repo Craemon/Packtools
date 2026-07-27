@@ -15,21 +15,21 @@ echo "Installing Packtools $LATEST_TAG..."
 
 # 1. Download CLI Binary
 echo "Downloading CLI..."
-sudo curl -sL "https://github.com/$REPO/releases/download/$LATEST_TAG/packtools-linux-amd64" -o /usr/local/bin/packtools
-sudo chmod +x /usr/local/bin/packtools
+sudo curl -sSL "https://github.com/$REPO/releases/download/$LATEST_TAG/packtools-linux-amd64" -o /usr/local/bin/packtools
+sudo chmod 755 /usr/local/bin/packtools
 
 # 2. Download Core Server JAR
 echo "Downloading Core Server..."
 sudo mkdir -p /usr/local/lib/packtools
-sudo curl -sL "https://github.com/$REPO/releases/download/$LATEST_TAG/core-all.jar" -o /usr/local/lib/packtools/core.jar
-sudo chmod 755 /usr/local/lib/packtools/core.jar
+sudo curl -sSL "https://github.com/$REPO/releases/download/$LATEST_TAG/core-all.jar" -o /usr/local/lib/packtools/core.jar
+sudo chmod 644 /usr/local/lib/packtools/core.jar
 
 # 3. Create 'packtools-server' wrapper script
 cat <<'EOF' | sudo tee /usr/local/bin/packtools-server > /dev/null
 #!/bin/sh
 exec java -jar /usr/local/lib/packtools/core.jar "$@"
 EOF
-sudo chmod +x /usr/local/bin/packtools-server
+sudo chmod 755 /usr/local/bin/packtools-server
 
 # 4. Generate default ~/.config/packtools/config.yaml if missing
 CONFIG_DIR="$HOME/.config/packtools"
@@ -47,8 +47,13 @@ fi
 
 # 5. Setup Bash Completion
 if [ -d /etc/bash_completion.d ]; then
-    sudo packtools completion bash | sudo tee /etc/bash_completion.d/packtools > /dev/null
-    echo "Installed bash autocompletion."
+    if /usr/local/bin/packtools completion bash > /tmp/packtools_completion 2>/dev/null; then
+        sudo mv /tmp/packtools_completion /etc/bash_completion.d/packtools
+        sudo chmod 644 /etc/bash_completion.d/packtools
+        echo "Installed bash autocompletion."
+    else
+        rm -f /tmp/packtools_completion
+    fi
 fi
 
 echo ""

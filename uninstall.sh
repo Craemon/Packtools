@@ -11,19 +11,25 @@ sudo rm -rf /usr/local/lib/packtools
 # Remove autocompletion
 sudo rm -f /etc/bash_completion.d/packtools
 
-echo "Packtools binaries removed."
+echo "Packtools system files removed."
 
-# Prompt to clean user config directory
-USER_HOME="${SUDO_USER:-$USER}"
-CONFIG_DIR="/home/$USER_HOME/.config/packtools"
+# Resolve real user's home directory
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(eval echo "~$REAL_USER")
+CONFIG_DIR="$REAL_HOME/.config/packtools"
 
 if [ -d "$CONFIG_DIR" ]; then
-    printf "Do you want to delete configuration files in %s? [y/N] " "$CONFIG_DIR"
+    printf "Do you want to delete user configuration files in %s? [y/N] " "$CONFIG_DIR"
     read -r response
-    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
-        rm -rf "$CONFIG_DIR"
-        echo "Configuration directory deleted."
-    fi
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            rm -rf "$CONFIG_DIR"
+            echo "Configuration directory deleted."
+            ;;
+        *)
+            echo "Skipped configuration deletion."
+            ;;
+    esac
 fi
 
 echo "✓ Uninstallation complete."
