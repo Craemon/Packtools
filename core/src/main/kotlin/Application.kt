@@ -30,6 +30,10 @@ fun Application.module() {
 
     val workspaceRoot = File(repoRootPath).canonicalFile
 
+    if (workspaceRoot == File(System.getProperty("user.home")).canonicalFile || workspaceRoot.parent == null) {
+        throw IllegalStateException("Refusing to run Packtools directly on user home or root directory: ${workspaceRoot.absolutePath}")
+    }
+
     log.info("Packtools Core operating on repository root: ${workspaceRoot.absolutePath}")
 
     val packsDir = File(workspaceRoot, "packs")
