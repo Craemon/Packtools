@@ -3,11 +3,16 @@ set -e
 
 REPO="Craemon/Packtools"
 
-echo "Fetching latest release from GitHub ($REPO)..."
-LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+if [ -n "$TAG" ]; then
+    LATEST_TAG="$TAG"
+    echo "Using specified tag: $LATEST_TAG"
+else
+    echo "Fetching latest release from GitHub ($REPO)..."
+    LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+fi
 
 if [ -z "$LATEST_TAG" ]; then
-    echo "Error: Could not determine latest release version."
+    echo "Error: Could not determine release version."
     exit 1
 fi
 
