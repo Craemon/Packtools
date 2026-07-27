@@ -22,8 +22,15 @@ fun Application.module() {
         json(jsonConfig)
     }
 
-    val repoRootPath = environment.config.propertyOrNull("ktor.deployment.repoRoot")?.getString() ?: "."
-    val workspaceRoot = File(repoRootPath)
+    val userConfigFile = File(System.getProperty("user.home"), ".config/packtools/config.yaml")
+
+    val repoRootPath = parseRepoRoot(userConfigFile)
+        ?: environment.config.propertyOrNull("ktor.deployment.repoRoot")?.getString()
+        ?: "."
+
+    val workspaceRoot = File(repoRootPath).canonicalFile
+
+    log.info("Packtools Core operating on repository root: ${workspaceRoot.absolutePath}")
 
     val packsDir = File(workspaceRoot, "packs")
     val libDir = File(workspaceRoot, "lib")
@@ -52,4 +59,17 @@ fun Application.module() {
     val artifactService = ArtifactService(artifactsDir = artifactsDir)
 
     configureRouting(packService, buildHistoryService, artifactService)
+}
+
+private fun parseRepoRoot(file: File): String? {
+    if (!file.exists()) return null
+    return file.useLines { lines ->
+        lines.firstOrNull { it.trim().startsWith("repoRoot:") }
+            ?.substringAfter("repoRoot:")
+            ?.substringBefore("#") // Strip inline comments
+            ?.trim()
+            ?.removeSurrounding("\"")
+            ?.removeSurrounding("'")
+            ?.takeIf { it.isNotBlank() } // Return null if value was empty
+    }
 }
