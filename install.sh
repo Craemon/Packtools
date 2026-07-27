@@ -61,8 +61,41 @@ if [ -d /etc/bash_completion.d ]; then
     fi
 fi
 
+# 6. Setup Background Systemd Service
+SYSTEMD_ENABLED=0
+
+if command -v systemctl >/dev/null 2>&1 && systemctl --user status >/dev/null 2>&1; then
+    SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
+    mkdir -p "$SYSTEMD_USER_DIR"
+
+    cat <<EOF > "$SYSTEMD_USER_DIR/packtools.service"
+[Unit]
+Description=Packtools Core Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/packtools-server
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+
+    systemctl --user daemon-reload 2>/dev/null || true
+    systemctl --user enable --now packtools.service 2>/dev/null || true
+    SYSTEMD_ENABLED=1
+fi
+
 echo ""
 echo "✓ Installation complete ($LATEST_TAG)!"
 echo "  To configure your Packs folder path, edit: $CONFIG_FILE"
-echo "  Run 'packtools-server &' to start the server."
-echo "  Run 'packtools' to run CLI commands."
+
+if [ "$SYSTEMD_ENABLED" -eq 1 ]; then
+    echo "  Background server automatically started via systemd (packtools.service)."
+    echo "  Run 'packtools' to start using CLI commands immediately."
+else
+    echo "  ℹ systemd user session not detected."
+    echo "  To run the server manually, execute: packtools-server &"
+fi
