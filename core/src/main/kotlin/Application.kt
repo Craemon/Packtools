@@ -24,9 +24,7 @@ fun Application.module() {
 
     val userConfigFile = File(System.getProperty("user.home"), ".config/packtools/config.yaml")
 
-    val repoRootPath = parseRepoRoot(userConfigFile)
-        ?: environment.config.propertyOrNull("ktor.deployment.repoRoot")?.getString()
-        ?: "."
+    val repoRootPath = parseRepoRoot(userConfigFile) ?: "."
 
     val workspaceRoot = File(repoRootPath).canonicalFile
 

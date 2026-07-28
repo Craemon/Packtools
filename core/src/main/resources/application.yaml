@@ -1,7 +1,6 @@
 ktor:
   deployment:
-    port: 8080
-    repoRoot: "/home/henning/Projects/GitHub/Packs"
+    port: 9501
   application:
     modules:
       - com.craemon.ApplicationKt.module
