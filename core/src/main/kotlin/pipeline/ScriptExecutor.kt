@@ -11,7 +11,14 @@ object ScriptExecutor {
     ) {
         commands.filter { it.isNotBlank() }.forEach { rawCommand ->
             try {
-                val parts = rawCommand.split(" ")
+                val parts = Regex("""[^\s"]+|"[^"]*"?""")
+                    .findAll(rawCommand)
+                    .map { it.value.removeSurrounding("\"") }
+                    .filter { it.isNotBlank() }
+                    .toList()
+
+                if (parts.isEmpty()) return@forEach
+
                 val scriptPath = parts[0]
 
                 val executableFile = if (scriptPath.startsWith("/")) {
