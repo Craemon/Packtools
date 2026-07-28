@@ -96,7 +96,8 @@ WantedBy=default.target
 EOF
 
     systemctl --user daemon-reload 2>/dev/null || true
-    systemctl --user enable --now packtools.service 2>/dev/null || true
+    systemctl --user enable packtools.service 2>/dev/null || true
+    systemctl --user restart packtools.service 2>/dev/null || true
     SYSTEMD_ENABLED=1
 
     # Give server a moment to spin up before CLI completion calls the API
@@ -123,7 +124,7 @@ echo "✓ Installation complete ($LATEST_TAG)!"
 echo "  To configure your Packs folder path, edit: $CONFIG_FILE"
 
 if [ "$SYSTEMD_ENABLED" -eq 1 ]; then
-    echo "  Background server automatically started via systemd (packtools.service)."
+    echo "  Background server automatically started/restarted via systemd (packtools.service)."
     echo "  Run 'packtools' to start using CLI commands immediately."
 else
     echo "  ℹ systemd user session not detected."
