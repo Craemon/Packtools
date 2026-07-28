@@ -18,7 +18,7 @@ func GetClient() *client.Client {
 	if ApiClient == nil {
 		url := viper.GetString("url")
 		if url == "" {
-			url = "http://localhost:8080/api/v1"
+			url = "http://localhost:9501/api/v1"
 		}
 		ApiClient = client.NewClient(url)
 	}
@@ -40,10 +40,10 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&ServerURL, "url", "u", "http://localhost:8080/api/v1", "Ktor API base URL")
+	rootCmd.PersistentFlags().StringVarP(&ServerURL, "url", "u", "http://localhost:9501/api/v1", "Ktor API base URL")
 	rootCmd.PersistentFlags().BoolVar(&RawJSON, "json", false, "Output raw JSON response")
 
-	viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))
+	_ = viper.BindPFlag("url", rootCmd.PersistentFlags().Lookup("url"))
 	viper.SetEnvPrefix("PACKTOOLS")
 	viper.AutomaticEnv()
 }
